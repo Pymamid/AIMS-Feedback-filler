@@ -1,2 +1,2 @@
 # AIMS-Feedback-filler
-An attempt to automate filling of feedback on AIMS
+To automate filling of feedback on AIMS
