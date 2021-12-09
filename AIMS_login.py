@@ -5,6 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 from PIL import Image, ImageDraw
 import pytesseract as tess
+from config import *
 
 tess.pytesseract.tesseract_cmd = r"C:\Users\aasee\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
 PATH = r"C:\Program Files (x86)\chromedriver.exe"
@@ -48,8 +49,8 @@ try:
     email_inp = get_element_by_id(driver=driver, value="uid")
     password_inp = get_element_by_id(driver=driver, value="pswrd")
 
-    email_inp.send_keys("EE20BTECH11060")
-    password_inp.send_keys("DCk2g3zp")
+    email_inp.send_keys(email)
+    password_inp.send_keys(password)
 
     captcha_image = get_element_by_id(driver=driver, value="appCaptchaLoginImg")
     captcha = captcha_image.get_attribute("src")[-5:]
