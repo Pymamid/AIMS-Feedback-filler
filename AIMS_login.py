@@ -1,76 +1,118 @@
+import selenium
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support import expected_conditions as EC
 import time
-from config import *
+import random
 
+PATH = ""
+driver = webdriver.Chrome(PATH)
 
-def get_element(driver, by, value):
-    element = WebDriverWait(driver=driver, timeout=5).until(
-        EC.presence_of_element_located((by, value))
+driver.get("https://aims.iith.ac.in/aims/")
+
+Roll_Number = ""
+Password = ""
+
+uid = driver.find_element_by_id("uid")
+uid.send_keys(Roll_Number)
+
+pwd = driver.find_element_by_id("pswrd")
+pwd.send_keys(Password)
+
+captcha_img = driver.find_element_by_id("appCaptchaLoginImg")
+tmp = captcha_img.get_attribute('src')
+cap1 = tmp[-5:]
+captcha1 = driver.find_element_by_id("captcha")
+captcha1.send_keys(cap1)
+
+button1 = driver.find_element_by_id("login")
+button1.click()
+
+actions = ActionChains(driver)
+
+try:
+    captcha2 = WebDriverWait(driver, 60).until(
+        EC.presence_of_element_located((By.ID, "captcha"))
     )
-    return element
 
-
-def get_all_elements(driver, by, value):
-    elements = WebDriverWait(driver=driver, timeout=5).until(
-        EC.presence_of_all_elements_located((by, value))
+    academic = WebDriverWait(driver, 60).until(
+        EC.presence_of_element_located((By.XPATH, "//span[@title='Academic']"))
     )
-    return elements
+    actions.click(on_element=academic)
+    
+    view_courses = WebDriverWait(driver, 60).until(
+        EC.presence_of_element_located((By.XPATH, "//span[@title='View My Courses']"))
+    )
+    actions.move_to_element(to_element = view_courses).click(on_element = view_courses)
+    actions.perform()
 
+    feedback = WebDriverWait(driver, 60).until(
+        EC.presence_of_element_located((By.XPATH, "//span[@class='iconLeft']"))
+    )
+    feedback_buttons = driver.find_elements_by_class_name('fb_status_change_icon')
+    n = len(feedback_buttons)
+    if n != 0:
+        for i in range(n):
+            feedback_wait = WebDriverWait(driver, 60).until(
+            EC.presence_of_element_located((By.XPATH, "//span[@class='iconLeft']"))
+            )
 
-# Fun begins;)
+            feedback_button = driver.find_element_by_class_name('fb_status_change_icon')   
+            feedback_link = feedback_button.get_attribute('href')
+            # print(f'\n\n\n{feedback_link}\n\n\n')
+            driver.get(feedback_link)
 
+            feedback2 = WebDriverWait(driver, 60).until(
+            EC.presence_of_element_located((By.XPATH, "//span[@class='iconLeft']"))
+            )
+            feedback2_buttons = driver.find_elements_by_class_name('fb_status_change_icon')
+            m = len(feedback2_buttons)
+            for j in range(m):
+                feedback_wait = WebDriverWait(driver, 60).until(
+                EC.presence_of_element_located((By.XPATH, "//span[@class='iconLeft']"))
+                )
 
-def login(driver, email, password):
-    site = "https://aims.iith.ac.in/aims/login/loginHome"
-    driver.get(site)
-    try:
-        email_inp = get_element(driver=driver, by=By.ID, value="uid")
-        password_inp = get_element(driver=driver, by=By.ID, value="pswrd")
+                feedback2_button = driver.find_element_by_class_name('fb_status_change_icon')
+                feedback2_link = feedback2_button.get_attribute('href')
+                driver.get(feedback2_link)
 
-        email_inp.send_keys(email)
-        password_inp.send_keys(password)
+                feedback_value = "'4.00'"
+                feedback3 = WebDriverWait(driver, 60).until(
+                EC.presence_of_element_located((By.XPATH, f"//input[@value={feedback_value}]"))
+                )
 
-        captcha_image = get_element(driver=driver, by=By.ID, value="appCaptchaLoginImg")
-        captcha = captcha_image.get_attribute("src")[-5:]
+                Remarks = ["Great Course!", "Very Informative", "Enjoyable", "Wonderful", "Exciting"]
+                driver.find_element_by_id('fbRemarks').send_keys(random.choice(Remarks))
 
-        captcha_field = get_element(driver=driver, by=By.ID, value="captcha")
-        captcha_field.send_keys(captcha)
+                console_feedback_command = f'$("[value={feedback_value}]").click()'
+                driver.execute_script(console_feedback_command)
 
-        submit = get_element(driver=driver, by=By.CLASS_NAME, value="signIn")
-        submit.click()
-        time.sleep(10)
-    except:
-        driver.quit()
+                #submit_button_id = "'savefb'"
+                #console_submit_command = f'$("[id={submit_button_id}]").click()'
+                #driver.execute_script(console_feedback_command)
 
+                print(time.time())
+                try:
+                    print("about to look for element")
+                    def find(driver):
+                        e = driver.find_element_by_id("savefb")
+                        if (e.get_attribute("disabled")=='true'):
+                            return False
+                        return e
+                    element = WebDriverWait(driver, 10).until(find)
+                    print("still looking?")
+                finally: 
+                    print('yowp')
+                print("ok, left the loop")
+                print(time.time())
+                actions.move_to_element(to_element = element).click(on_element = element)
+                actions.perform()
 
-def homepage(driver):
-    # site = "https://aims.iith.ac.in/aims/login/home"
-    # driver.get(site)
-    try:
-        academic = get_element(driver, by=By.XPATH, value="//span[@title='Academic']")
-        # print(academic.get_attribute("title"))
-        actions.click(on_element=academic)
+    else: 
+        driver.close()
 
-        view_courses = get_element(driver, by=By.XPATH, value="//span[@title='View My Courses']")
-        actions.move_to_element(to_element=view_courses).click(on_element=view_courses)
-        actions.perform()
-    except:
-        driver.quit()
-
-
-def courses_page(driver):
-    course_elements = get_all_elements(driver, by=By.CLASS_NAME, value=r'tab_body_bg')
-    driver.quit()
-
-
-if __name__ == '__main__':
-    driver = webdriver.Chrome(Driver_Path)
-    driver.set_window_size(1280, 1080)
-    actions = ActionChains(driver)
-    login(driver, email, password)
-    homepage(driver)
-    courses_page(driver)
+finally:
+    time.sleep(10)
